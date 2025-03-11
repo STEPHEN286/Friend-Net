@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .sheet-open {
+    animation: sheet-in 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  
+  .sheet-close {
+    animation: sheet-out 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  @keyframes sheet-in {
+    0% {
+      transform: translateY(100%);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes sheet-out {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  .backdrop-blur {
+    backdrop-filter: blur(4px);
+  }
+} 
