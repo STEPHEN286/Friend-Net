@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DEFAULT_PROFILE_IMAGE, DEFAULT_POST_IMAGE } from '../config/images';
+import { auth } from '@/firebabaseConfig';
+import { createPost, getUserById } from '@/services/services';
+import { serverTimestamp } from 'firebase/firestore';
+
+
 
 const CreatePost = () => {
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [userProfileImage, setUserProfileImage] = useState()
   const [selectedImage, setSelectedImage] = useState(null);
+
+
   const maxLength = 500;
 
   const handleImageClick = () => {
@@ -32,20 +40,65 @@ const CreatePost = () => {
     setShowPreview(true);
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     // TODO: Implement post publishing logic
-    console.log('Publishing post:', { content, image: selectedImage });
-    setContent('');
-    setSelectedImage(null);
-    setShowPreview(false);
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.error("No user is signed in.");
+      return;
+    }
+    const userData = await getUserById(currentUser.uid);
+    console.log("user details to publish post",userData);
+    // if (!userData) {
+    //   console.error("User data not found.");
+    //   return;
+    // }
+
+    await createPost({
+      content,
+      userId: currentUser.uid,
+      userName: userData.username,
+      timestamp: serverTimestamp(),  
+    });
+   
+
+    
+  
+
   };
 
+
+
+
+
+
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (currentUser) {
+        console.log("Current User:", currentUser);
+        const userData = await getUserById(currentUser.uid);
+        console.log("userData",userData);
+        if (userData?.profilePic) {
+          setUserProfileImage(userData.profilePic);
+        }
+        // console.log("User Data:", userData);
+      } else {
+        console.log("No user is signed in.");
+        setUserProfileImage(DEFAULT_PROFILE_IMAGE);
+      }
+    });
+  
+    // Cleanup the observer when the component unmounts
+    return () => unsubscribe();
+  }, []);
   return (
-    <div className="bg-white rounded-lg shadow mb-4">
+    // console.log(userProfileImage),
+    <div className="bg-white  rounded-lg shadow mb-4">
       <div className="p-4">
         <div className="flex space-x-3">
           <img
-            src={DEFAULT_PROFILE_IMAGE}
+            src={ userProfileImage}
             alt="Current user"
             className="w-10 h-10 rounded-full"
           />

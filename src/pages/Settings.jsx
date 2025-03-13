@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PROFILE_IMAGE } from '../config/images';
+import { logout } from '../services/authServices';
+import { ROUTES } from '../routes';
+import MobileSettings from './Settings/MobileSettings';
 
 const Settings = () => {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('profile');
   const [formData, setFormData] = useState({
     fullName: 'Current User',
@@ -86,257 +91,287 @@ const Settings = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex space-x-8">
-        {/* Navigation */}
-        <nav className="w-64 bg-white rounded-lg shadow p-4 h-fit">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Settings</h2>
-          <ul className="space-y-2">
-            {navigationItems.map(item => (
-              <li key={item.id}>
-                <button
-                  onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg text-sm font-medium ${
-                    activeSection === item.id
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <i className={`fas fa-${item.icon}`}></i>
-                  <span>{item.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <>
+      {/* Mobile Settings */}
+      <MobileSettings />
 
-        {/* Content */}
-        <div className="flex-1 bg-white rounded-lg shadow p-6">
-          <form onSubmit={handleSubmit}>
-            {/* Profile Settings */}
-            {activeSection === 'profile' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Profile Settings</h3>
-                <div className="flex items-center space-x-6">
-                  <div className="relative">
-                    <img
-                      src={formData.profileImage}
-                      alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover"
-                    />
-                    <label
-                      htmlFor="profile-image"
-                      className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700"
-                    >
-                      <i className="fas fa-camera"></i>
-                    </label>
-                    <input
-                      id="profile-image"
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                    />
-                  </div>
-                  <div className="space-y-4 flex-1">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Bio
-                      </label>
-                      <textarea
-                        name="bio"
-                        value={formData.bio}
-                        onChange={handleChange}
-                        rows={3}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Security Settings */}
-            {activeSection === 'security' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Security Settings</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Current Password
-                    </label>
-                    <input
-                      type="password"
-                      name="currentPassword"
-                      value={formData.currentPassword}
-                      onChange={handleChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      New Password
-                    </label>
-                    <input
-                      type="password"
-                      name="newPassword"
-                      value={formData.newPassword}
-                      onChange={handleChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Confirm New Password
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Privacy Settings */}
-            {activeSection === 'privacy' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Privacy Settings</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Profile Visibility
-                    </label>
-                    <select
-                      value={formData.privacySettings.profileVisibility}
-                      onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="public">Public</option>
-                      <option value="friends">Friends Only</option>
-                      <option value="private">Private</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      Show Online Status
-                    </span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.privacySettings.showOnlineStatus}
-                        onChange={(e) => handlePrivacyChange('showOnlineStatus', e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Who Can Message You
-                    </label>
-                    <select
-                      value={formData.privacySettings.allowMessages}
-                      onChange={(e) => handlePrivacyChange('allowMessages', e.target.value)}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="everyone">Everyone</option>
-                      <option value="friends">Friends Only</option>
-                      <option value="none">No One</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Notification Settings */}
-            {activeSection === 'notifications' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
-                <div className="space-y-4">
-                  {Object.entries(formData.notificationSettings).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={value}
-                          onChange={(e) => handleNotificationChange(key, e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Danger Zone */}
-            {activeSection === 'danger' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-red-600">Danger Zone</h3>
-                <div className="space-y-4">
-                  <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-                    <h4 className="text-base font-medium text-red-800">Delete Account</h4>
-                    <p className="mt-1 text-sm text-red-600">
-                      Once you delete your account, there is no going back. Please be certain.
-                    </p>
+      {/* Desktop Settings - Only visible on md and up */}
+      <div className="hidden md:block">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex space-x-8">
+            {/* Navigation */}
+            <nav className="w-64 bg-white rounded-lg shadow p-4 h-fit">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Settings</h2>
+              <ul className="space-y-2">
+                {navigationItems.map(item => (
+                  <li key={item.id}>
                     <button
-                      type="button"
-                      className="mt-4 px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-colors"
+                      onClick={() => setActiveSection(item.id)}
+                      className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg text-sm font-medium ${
+                        activeSection === item.id
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
                     >
-                      Delete Account
+                      <i className={`fas fa-${item.icon}`}></i>
+                      <span>{item.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {/* Content */}
+            <div className="flex-1 bg-white rounded-lg shadow p-6">
+              <form onSubmit={handleSubmit}>
+                {/* Profile Settings */}
+                {activeSection === 'profile' && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Profile Settings</h3>
+                    <div className="flex items-center space-x-6">
+                      <div className="relative">
+                        <img
+                          src={formData.profileImage}
+                          alt="Profile"
+                          className="w-24 h-24 rounded-full object-cover"
+                        />
+                        <label
+                          htmlFor="profile-image"
+                          className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700"
+                        >
+                          <i className="fas fa-camera"></i>
+                        </label>
+                        <input
+                          id="profile-image"
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                        />
+                      </div>
+                      <div className="space-y-4 flex-1">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            name="fullName"
+                            value={formData.fullName}
+                            onChange={handleChange}
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Bio
+                          </label>
+                          <textarea
+                            name="bio"
+                            value={formData.bio}
+                            onChange={handleChange}
+                            rows={3}
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Security Settings */}
+                {activeSection === 'security' && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Security Settings</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Current Password
+                        </label>
+                        <input
+                          type="password"
+                          name="currentPassword"
+                          value={formData.currentPassword}
+                          onChange={handleChange}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          New Password
+                        </label>
+                        <input
+                          type="password"
+                          name="newPassword"
+                          value={formData.newPassword}
+                          onChange={handleChange}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Confirm New Password
+                        </label>
+                        <input
+                          type="password"
+                          name="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Privacy Settings */}
+                {activeSection === 'privacy' && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Privacy Settings</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Profile Visibility
+                        </label>
+                        <select
+                          value={formData.privacySettings.profileVisibility}
+                          onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="public">Public</option>
+                          <option value="friends">Friends Only</option>
+                          <option value="private">Private</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">
+                          Show Online Status
+                        </span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.privacySettings.showOnlineStatus}
+                            onChange={(e) => handlePrivacyChange('showOnlineStatus', e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Who Can Message You
+                        </label>
+                        <select
+                          value={formData.privacySettings.allowMessages}
+                          onChange={(e) => handlePrivacyChange('allowMessages', e.target.value)}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="everyone">Everyone</option>
+                          <option value="friends">Friends Only</option>
+                          <option value="none">No One</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Notification Settings */}
+                {activeSection === 'notifications' && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
+                    <div className="space-y-4">
+                      {Object.entries(formData.notificationSettings).map(([key, value]) => (
+                        <div key={key} className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700 capitalize">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                          </span>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={value}
+                              onChange={(e) => handleNotificationChange(key, e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Danger Zone */}
+                {activeSection === 'danger' && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Danger Zone</h3>
+                    <div className="space-y-4">
+                      <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+                        <h4 className="text-base font-medium text-red-800 mb-2">Sign Out</h4>
+                        <p className="text-sm text-red-600 mb-4">
+                          This will sign you out from your account. You'll need to sign in again to access your account.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await logout();
+                              navigate(ROUTES.AUTH.LOGIN);
+                            } catch (error) {
+                              console.error('Logout error:', error);
+                              // You might want to show an error message to the user
+                            }
+                          }}
+                          className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                      
+                      <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+                        <h4 className="text-base font-medium text-red-800 mb-2">Delete Account</h4>
+                        <p className="text-sm text-red-600 mb-4">
+                          Once you delete your account, there is no going back. Please be certain.
+                        </p>
+                        <button
+                          type="button"
+                          className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        >
+                          Delete Account
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Save Button */}
+                {activeSection !== 'danger' && (
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Save Changes
                     </button>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Save Button */}
-            {activeSection !== 'danger' && (
-              <div className="mt-6 flex justify-end">
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Save Changes
-                </button>
-              </div>
-            )}
-          </form>
+                )}
+              </form>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

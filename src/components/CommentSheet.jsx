@@ -7,8 +7,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { DEFAULT_PROFILE_IMAGE } from '../config/images';
+import { addComment } from '@/services/services';
 
-const CommentSheet = ({ postImage, comments = [], onComment }) => {
+const CommentSheet = ({ postImage, comments = []}) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -74,12 +75,14 @@ const CommentSheet = ({ postImage, comments = [], onComment }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleSubmit = () => {
-    if (commentText.trim() || audioURL) {
-      onComment({ text: commentText, audio: audioURL });
+  const handleSubmit = async (postId, userId, userName) => {
+    try {
+     await addComment(postId, commentText, userId, userName);
       setCommentText('');
       setAudioURL(null);
-      setRecordingTime(0);
+      setIsRecording(false);
+    } catch (error) {
+      console.error('Error adding comment:', error);
     }
   };
 
@@ -117,43 +120,7 @@ const CommentSheet = ({ postImage, comments = [], onComment }) => {
             </SheetHeader>
 
             {/* Comments List */}
-            <div className="flex-1 overflow-y-auto px-4">
-              {safeComments.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                  <i className="far fa-comments text-4xl mb-2"></i>
-                  <p>No comments yet</p>
-                  <p className="text-sm">Be the first to comment!</p>
-                </div>
-              ) : (
-                safeComments.map((comment, index) => (
-                  <div key={index} className="py-4 flex items-start space-x-3 border-b border-gray-100">
-                    <img 
-                      src={comment.user?.avatar || DEFAULT_PROFILE_IMAGE} 
-                      alt={comment.user?.name} 
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{comment.user?.name || 'Anonymous'}</span>
-                        <span className="text-xs text-gray-500">{comment.timestamp}</span>
-                      </div>
-                      {comment.content && (
-                        <p className="text-gray-800 mt-1">{comment.content}</p>
-                      )}
-                      {comment.audio && (
-                        <div className="mt-2 flex items-center space-x-2 bg-gray-100 rounded-full py-2 px-4">
-                          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                            <i className="fas fa-play text-white text-xs"></i>
-                          </div>
-                          <div className="flex-1 h-[18px] bg-blue-200/30"></div>
-                          <span className="text-xs text-gray-500">{comment.duration}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+            
 
             {/* Comment Input */}
             <div className="p-4 border-t bg-white">
@@ -226,7 +193,7 @@ const CommentSheet = ({ postImage, comments = [], onComment }) => {
                 </div>
                 <button 
                   className={`text-blue-600 font-medium text-sm ${(!commentText.trim() && !audioURL) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={handleSubmit}
+                  onClick={() => handleSubmit(postId, userId, userName)}
                   disabled={!commentText.trim() && !audioURL}
                 >
                   Post

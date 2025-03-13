@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { DEFAULT_PROFILE_IMAGE } from '../config/images';
 import { ROUTES } from '../routes';
 
 const Navbar = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const location = useLocation();
+  const isProfilePage = location.pathname === '/profile';
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
@@ -41,6 +43,17 @@ const Navbar = () => {
               <i className="fas fa-search"></i>
             </button>
 
+            {/* Settings - Only visible on profile page */}
+            {isProfilePage && (
+              <Link 
+                to={ROUTES.SETTINGS}
+                className="p-2 text-gray-600 hover:text-gray-900"
+                title="Settings"
+              >
+                <i className="fas fa-cog"></i>
+              </Link>
+            )}
+
             {/* Messages - Always visible */}
             <Link 
               to={ROUTES.MESSAGES} 
@@ -67,7 +80,7 @@ const Navbar = () => {
           </div>
         </div>
 
-       
+        {/* Mobile search bar */}
         {isSearchVisible && (
           <div className="md:hidden py-3 px-4 border-t border-gray-200">
             <div className="relative">

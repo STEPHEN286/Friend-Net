@@ -17,8 +17,10 @@ import Friends from '../pages/Friends';
 export const ROUTES = {
   // Auth routes
   AUTH: {
-    LOGIN: '/login',
-    SIGNUP: '/signup',
+    ROOT: '/auth',
+    LOGIN: '/auth/login',
+    SIGNUP: '/auth/signup',
+    FORGOT_PASSWORD: '/auth/forgot-password',
   },
   // Main app routes
   HOME: '/',
@@ -64,16 +66,21 @@ const ErrorBoundary = () => {
 // Create and export the router configuration
 const router = createBrowserRouter([
   {
+    path: ROUTES.AUTH.ROOT,
     element: <AuthLayout />,
     errorElement: <ErrorBoundary />,
     children: [
       {
-        path: ROUTES.AUTH.LOGIN,
+        path: 'login',
         element: <Login />,
       },
       {
-        path: ROUTES.AUTH.SIGNUP,
+        path: 'signup',
         element: <SignUp />,
+      },
+      {
+        path: '*',
+        element: <Navigate to={ROUTES.AUTH.LOGIN} replace />,
       },
     ],
   },
