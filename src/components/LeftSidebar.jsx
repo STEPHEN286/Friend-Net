@@ -2,10 +2,13 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { DEFAULT_PROFILE_IMAGE } from '../config/images';
 import { ROUTES } from '../routes';
+import { useAppSelector } from '@/store/hooks';
 
 const LeftSidebar = () => {
   const location = useLocation();
+  const currentUser = useAppSelector(state => state.auth);
 
+  console.log(" current user " ,currentUser);
   const navigationItems = [
     { path: ROUTES.HOME, icon: 'home', label: 'Home' },
     { path: ROUTES.EXPLORE, icon: 'compass', label: 'Explore' },
@@ -53,6 +56,7 @@ const LeftSidebar = () => {
     { path: ROUTES.SETTINGS, icon: 'cog', label: 'Settings' }
   ];
 
+  
   return (
     <>
       {/* Desktop Sidebar */}
@@ -62,13 +66,13 @@ const LeftSidebar = () => {
             {/* User Profile Section */}
             <Link to={ROUTES.PROFILE.ROOT} className="flex items-center space-x-3 mb-6">
               <img
-                src={DEFAULT_PROFILE_IMAGE}
+                src={currentUser.profileImage}
                 alt="Profile"
                 className="w-12 h-12 rounded-full"
               />
               <div>
-                <h3 className="font-medium">Current User</h3>
-                <p className="text-sm text-gray-500">@currentuser</p>
+                <h3 className="font-medium">{currentUser.userName}</h3>
+                <p className="text-sm text-gray-500">{currentUser.handle}</p>
               </div>
             </Link>
 

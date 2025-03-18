@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { DEFAULT_PROFILE_IMAGE, DEFAULT_POST_IMAGE } from '../config/images';
 import { auth } from '@/firebabaseConfig';
-import { createPost, getUserById } from '@/services/services';
 import { serverTimestamp } from 'firebase/firestore';
+import { getUserById } from '@/services/userServices';
+import { createPost } from '@/services/postServices';
 
 
 

@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React  from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ROUTES } from "../../routes";
-import { signUp } from "@/services/authServices";
+
+import { useDispatch, useSelector } from "react-redux";
+import { signUpUser } from "@/store/slices/authSlice";
 
 const SignUp = () => {
+  const {status, error} = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+
+
 
   const {
     register,
@@ -19,21 +23,15 @@ const SignUp = () => {
   const password = watch("password");
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
-    console.log(data);
+   
+   
+     
+      const resultAction = await dispatch(signUpUser({ email: data.email, password: data.password, username: data.username }))
+      .unwrap().then(() => navigate(ROUTES.HOME)).catch((err) => { console.log(err) });
+      console.log(resultAction);
 
-    try {
-      await signUp(data.email, data.password, data.username);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      navigate(ROUTES.HOME);
-    } catch (err) {
-      console.error("Signup error:", err);
-      setSubmitError("Failed to create account. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
-  };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -166,17 +164,17 @@ const SignUp = () => {
             </div>
           </div>
 
-          {submitError && (
-            <p className="text-sm text-red-600 text-center">{submitError}</p>
+          {error && (
+            <p className="text-sm text-red-600 text-center">{error}</p>
           )}
 
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={status === "pending"}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {status === "pending"  ? (
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   <i className="fas fa-spinner fa-spin"></i>
                 </span>
@@ -185,7 +183,7 @@ const SignUp = () => {
                   <i className="fas fa-user-plus"></i>
                 </span>
               )}
-              {isLoading ? "Creating account..." : "Create account"}
+              {status === "pending" ? "Creating account..." : "Create account"}
             </button>
           </div>
         </form>

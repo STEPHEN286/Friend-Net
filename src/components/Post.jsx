@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DEFAULT_PROFILE_IMAGE, DEFAULT_COMMENT_IMAGE } from '../config/images';
-import CommentSheet from './CommentSheet';
-import { getAllPosts } from '@/services/services';
+import CommentSheet from './post/comment/CommentSheet';
+
 
 import LikeButton from './post/LikeButton.jsx';
+import { getAllPosts } from '@/services/postServices';
 
 const Post = () => {
   const [posts, setPosts] = useState([]);
@@ -13,7 +14,7 @@ const Post = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const data = await getAllPosts(); // Ensure `getAllPosts` is async
+        const data = await getAllPosts(); 
         setPosts(data);
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -58,6 +59,7 @@ const Post = () => {
   
   return (
     <>
+    {console.log(posts)}
   {posts.length === 0 ? (
     <p className="text-center text-gray-500">No posts available.</p>
   ) : (

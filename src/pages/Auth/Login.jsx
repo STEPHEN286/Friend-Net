@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ROUTES } from '../../routes';
-import { signIn } from '@/services/authServices';
+// import { signIn } from '@/services/authServices';
+import { useDispatch } from 'react-redux';
+import { loginUser } from '@/store/slices/authSlice';
+import { useSelector } from 'react-redux';
 
 const Login = () => {
+  const dispatch =useDispatch ()
+  const { status , error } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  
   
   const {
     register,
@@ -22,22 +26,31 @@ const Login = () => {
   });
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
-    setSubmitError('');
-    
-    try {
    
-      await signIn(data.email, data.password);
-      console.log('Login attempt with:', data);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      navigate(ROUTES.HOME);
-    } catch (error) {
-      setSubmitError('Failed to login. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+ 
+    dispatch(loginUser({ email: data.email, password: data.password }))
+    .unwrap()
+    .then(() => navigate(ROUTES.HOME))
+    .catch(() => {});
+    // try {
+    //   const resultAction = await dispatch(loginUser({ email: data.email, password: data.password })).unwrap();
+    //   console.log(resultAction);
+    //   // if (loginUser.fulfilled.match(resultAction)) {
+    //   //   console.log("Logged")
+    //   //   console.log('Login successful:', resultAction.payload);
+    //   //   navigate(ROUTES.HOME);
+    //   // } else if (loginUser.rejected.match(resultAction)) {
+    //   //   console.error('Login failed:', resultAction.payload);
+    //   //   setSubmitError(resultAction.payload || 'Failed to login. Please try again.');
+    //   // }
+    // } catch (error) { 
+    //   // setSubmitError('Failed to login. Please try again.');
+    //   throw error;
+    // } finally {
+    //   // setIsLoading(false);
+    // }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -129,17 +142,18 @@ const Login = () => {
             </div>
           </div>
 
-          {submitError && (
-            <p className="text-sm text-red-600 text-center">{submitError}</p>
+          {error && (
+            <p className="text-sm text-red-600 text-center">{error}</p>
           )}
 
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={status === 'pending'}
+              
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {status === 'pending' ? (
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   <i className="fas fa-spinner fa-spin"></i>
                 </span>
@@ -148,7 +162,7 @@ const Login = () => {
                   <i className="fas fa-sign-in-alt"></i>
                 </span>
               )}
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {status === 'pending' ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>

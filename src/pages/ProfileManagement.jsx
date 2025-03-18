@@ -1,8 +1,12 @@
+
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 
 const ProfileManagement = () => {
   const [activeTab, setActiveTab] = useState('posts');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const user = useSelector((state) => state.auth);
+  console.log("user", user);
   // eslint-disable-next-line no-unused-vars
   const [userProfile, setUserProfile] = useState({
     name: 'Alexander Mitchell',
@@ -100,9 +104,9 @@ const ProfileManagement = () => {
       <div className="mt-20">
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-main">{userProfile.name}</h1>
-            <p className="text-main/60">{userProfile.username}</p>
-            <p className="mt-2 max-w-2xl text-main/80">{userProfile.bio}</p>
+            <h1 className="text-3xl font-bold text-main">{user.name}</h1>
+            <p className="text-main/60">{user.displayName}</p>
+            <p className="mt-2 max-w-2xl text-main/80">{user.bio}</p>
             <div className="flex items-center space-x-4 mt-3 text-main/70">
               <span className="flex items-center">
                 <i className="fas fa-map-marker-alt mr-2"></i>
