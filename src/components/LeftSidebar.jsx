@@ -8,7 +8,7 @@ const LeftSidebar = () => {
   const location = useLocation();
   const {user }= useAppSelector(state => state.auth);
 
-  // console.log(" current user " ,currentUser);
+  console.log(" current user " ,user);
   const navigationItems = [
     { path: ROUTES.HOME, icon: 'home', label: 'Home' },
     { path: ROUTES.EXPLORE, icon: 'compass', label: 'Explore' },
@@ -66,7 +66,7 @@ const LeftSidebar = () => {
             {/* User Profile Section */}
             <Link to={ROUTES.PROFILE.ROOT} className="flex items-center space-x-3 mb-6">
               <img
-                src={user.profilePic}
+                src={user?.profilePic}
                 alt="Profile"
                 className="w-12 h-12 rounded-full"
               />

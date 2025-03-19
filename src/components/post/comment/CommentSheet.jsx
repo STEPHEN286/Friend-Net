@@ -18,6 +18,8 @@ const CommentSheet = ({ postImage, postId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const {user} = useAppSelector(state => state.auth);
 
+  console.log( 'comment sheet', user);
+
   useEffect(() => {
     const fetchComments = async () => {
       if (postId) {
@@ -37,19 +39,21 @@ const CommentSheet = ({ postImage, postId }) => {
   }, [postId]);
 
   const handleSubmit = async (commentText) => {
-    if (!user.id || !user.userName) {
+    if (!user.uid || !user.username) {
       console.error('User information is required to comment');
       return;
     }
 
     try {
-      await addComment(postId, commentText, user.id, user.userName);
+      await addComment(postId, commentText, user.uid, user.username);
       const updatedComments = await getComments(postId);
       setComments(updatedComments);
     } catch (error) {
       console.error('Error adding comment:', error);
     }
   };
+
+  console.log(comments);
 
   return (
     <Sheet>

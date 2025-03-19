@@ -81,7 +81,7 @@ const Post = memo(() => {
 
           <div className="flex items-center space-x-4 text-gray-500">
             <LikeButton postId={post.id} />
-            <CommentSheet  comments={post.comments} onComment={handleComment} />
+            <CommentSheet  postId={post.id} comments={post.comments} onComment={handleComment} />
             <button className="flex items-center space-x-2 cursor-pointer">
               <i className="far fa-share-square"></i>
               <span>Share</span>

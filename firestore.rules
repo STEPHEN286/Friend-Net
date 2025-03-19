@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User rules
+    match /users/{userId} {
+      allow read: if true;  // Allow public reading of user profiles
+      allow write: if request.auth != null && request.auth.uid == userId;  // Users can only edit their own profile
+    }
+    
+    // Post rules
+    match /posts/{postId} {
+      allow read: if true;  // Anyone can read posts
+      allow create: if request.auth != null;  // Authenticated users can create posts
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;  // Only post owner can modify/delete
+      
+      // Comments subcollection
+      match /comments/{commentId} {
+        allow read: if true;  // Anyone can read comments
+        allow create: if request.auth != null;  // Authenticated users can comment
+        allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;  // Comment owner can modify/delete
+      }
+    }
+
+    // Chat rules
+    match /chats/{chatId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Friend request rules
+    match /friend_requests/{requestId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Notification rules
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+} 
+} 
