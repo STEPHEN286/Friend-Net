@@ -12,6 +12,7 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import { uploadToCloudinary } from './uploadService';
 
 export const getAllPosts = async () => {
   const postsRef = collection(db, "posts");
@@ -36,21 +37,41 @@ export const getAllPosts = async () => {
   return posts;
 };
 
-export const createPost = async ({ content, userId, userName }) => {
+export const createPost = async ({ content, mediaFile, userId, userName }) => {
   try {
-    const postRef = collection(db, "posts");
+    // Validate required fields
+    if (!userId || !userName) {
+      throw new Error("userId and userName are required");
+    }
 
+    let mediaUrl = null;
+    let mediaType = null;
+
+    // Handle media upload if present
+    if (mediaFile) {
+      mediaType = mediaFile.type.startsWith('image/') ? 'image' : 'video';
+      const uploadResult = await uploadToCloudinary(mediaFile);
+      mediaUrl = uploadResult.url;
+    }
+
+    const postRef = collection(db, "posts");
     const newPost = {
-      content,
+      content: content || "",
       userId,
       userName,
+      mediaUrl,
+      mediaType,
       timestamp: serverTimestamp(),
       likes: [],
       comments: [],
     };
 
     const docRef = await addDoc(postRef, newPost);
-    return { id: docRef.id, ...newPost };
+    return { 
+      id: docRef.id, 
+      ...newPost,
+      timestamp: new Date() // Convert serverTimestamp for immediate use
+    };
   } catch (error) {
     console.error("Error creating post:", error);
     throw error;

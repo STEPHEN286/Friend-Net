@@ -73,9 +73,9 @@ const Post = memo(() => {
             )}
           </p>
 
-          {post.image && (
+          {post.mediaUrl && (
             <div className="mb-4">
-              <img src={post.image} alt="Post content" className="w-full rounded-lg" />
+              <img src={post.mediaUrl} alt="Post content" className="w-full rounded-lg" />
             </div>
           )}
 
