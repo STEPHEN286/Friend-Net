@@ -1,26 +1,11 @@
-
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 const ProfileManagement = () => {
   const [activeTab, setActiveTab] = useState('posts');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const user = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   console.log("user", user);
-  // eslint-disable-next-line no-unused-vars
-  const [userProfile, setUserProfile] = useState({
-    name: 'Alexander Mitchell',
-    username: '@alexmitchell',
-    bio: 'Senior Product Designer | Digital Innovation Enthusiast | Creating user-centered experiences that make a difference',
-    location: 'San Francisco, CA',
-    website: 'www.alexmitchell.design',
-    joinDate: 'March 2020',
-    stats: {
-      posts: 482,
-      followers: 12800,
-      following: 891
-    }
-  });
 
   const posts = [
     {
@@ -95,8 +80,8 @@ const ProfileManagement = () => {
           Image
         </div>
         <div className="absolute -bottom-16 left-8">
-          <div className="w-32 h-32 rounded-full border-4 border-white ring-4 ring-primary/20 bg-gray-200 flex items-center justify-center text-gray-400">
-            Image
+          <div className="w-32 h-32 rounded-full border-4 border-white ring-4 ring-primary/20 overflow-hidden bg-gray-200 flex items-center justify-center text-gray-400">
+            <img src={user?.profilePic} alt={user?.name || "Profile"} />
           </div>
         </div>
       </div>
@@ -104,21 +89,21 @@ const ProfileManagement = () => {
       <div className="mt-20">
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-main">{user.name}</h1>
-            <p className="text-main/60">{user.displayName}</p>
-            <p className="mt-2 max-w-2xl text-main/80">{user.bio}</p>
+            <h1 className="text-3xl font-bold text-main">{user?.name || "User"}</h1>
+            <p className="text-main/60">{user?.username || "@username"}</p>
+            <p className="mt-2 max-w-2xl text-main/80">{user?.bio || "No bio available"}</p>
             <div className="flex items-center space-x-4 mt-3 text-main/70">
               <span className="flex items-center">
                 <i className="fas fa-map-marker-alt mr-2"></i>
-                {userProfile.location}
+                {user?.location || "Location not specified"}
               </span>
               <span className="flex items-center">
                 <i className="fas fa-link mr-2"></i>
-                {userProfile.website}
+                {user?.website || "No website"}
               </span>
               <span className="flex items-center">
                 <i className="fas fa-calendar mr-2"></i>
-                Joined {userProfile.joinDate}
+                Joined {user?.joinDate || "Unknown"}
               </span>
             </div>
           </div>
@@ -132,15 +117,15 @@ const ProfileManagement = () => {
 
         <div className="flex space-x-8 mb-8">
           <div className="text-center">
-            <div className="text-xl font-bold text-main">{userProfile.stats.posts}</div>
+            <div className="text-xl font-bold text-main">{user?.stats?.posts || 0}</div>
             <div className="text-main/70">Posts</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-main">{userProfile.stats.followers}</div>
+            <div className="text-xl font-bold text-main">{user?.stats?.followers || 0}</div>
             <div className="text-main/70">Followers</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-main">{userProfile.stats.following}</div>
+            <div className="text-xl font-bold text-main">{user?.stats?.following || 0}</div>
             <div className="text-main/70">Following</div>
           </div>
         </div>
@@ -252,14 +237,14 @@ const ProfileManagement = () => {
                 <label className="block text-sm font-medium text-main/70 mb-1">Name</label>
                 <input
                   type="text"
-                  value={userProfile.name}
+                  defaultValue={user?.name}
                   className="w-full px-3 py-2 border border-main/20 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-main/70 mb-1">Bio</label>
                 <textarea
-                  value={userProfile.bio}
+                  defaultValue={user?.bio}
                   rows={3}
                   className="w-full px-3 py-2 border border-main/20 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
@@ -268,7 +253,7 @@ const ProfileManagement = () => {
                 <label className="block text-sm font-medium text-main/70 mb-1">Location</label>
                 <input
                   type="text"
-                  value={userProfile.location}
+                  defaultValue={user?.location}
                   className="w-full px-3 py-2 border border-main/20 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
@@ -276,7 +261,7 @@ const ProfileManagement = () => {
                 <label className="block text-sm font-medium text-main/70 mb-1">Website</label>
                 <input
                   type="text"
-                  value={userProfile.website}
+                  defaultValue={user?.website}
                   className="w-full px-3 py-2 border border-main/20 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
@@ -302,4 +287,4 @@ const ProfileManagement = () => {
   );
 };
 
-export default ProfileManagement; 
+export default ProfileManagement;

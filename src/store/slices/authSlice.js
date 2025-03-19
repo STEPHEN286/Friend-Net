@@ -1,36 +1,30 @@
 import { logout, signIn, signUp } from '@/services/authServices';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { setUser } from './userSlice';
 
-// import { signUp, signIn, logout } from '../../services/authServices.jsx';
-
-// Async thunk for sign-up
+// Async thunk for sign up
 export const signUpUser = createAsyncThunk('auth/signUp', async ({ email, password, username }, { rejectWithValue }) => {
     try {
         const user = await signUp(email, password, username);
         localStorage.setItem('user', JSON.stringify(user));
-    
         return user;
     } catch (error) {
         return rejectWithValue(error.message);
     }
 });
 
-
-export const loginUser = createAsyncThunk('auth/login', async ({ email, password }, { rejectWithValue, dispatch }) => {
+// Async thunk for login
+export const loginUser = createAsyncThunk('auth/login', async ({ email, password }, { rejectWithValue }) => {
     try {
         const user = await signIn(email, password);
-    dispatch(setUser(user));
-    // console.log('user info', user);
         localStorage.setItem('user', JSON.stringify(user));
         return user;
     } catch (error) {
-        return rejectWithValue( 'Incorrect email or password');
+        return rejectWithValue('Incorrect email or password');
     }
 });
 
 // Async thunk for logout
-export const logoutUser = createAsyncThunk('auth/logout', async (_,  { rejectWithValue }) => {
+export const logoutUser = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
     try {
         await logout();
         localStorage.removeItem('user');
@@ -40,14 +34,25 @@ export const logoutUser = createAsyncThunk('auth/logout', async (_,  { rejectWit
     }
 });
 
+// Initial state
+const getUserFromStorage = () => {
+    try {
+        const user = localStorage.getItem('user');
+        return user ? JSON.parse(user) : null;
+    } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+        return null;
+    }
+};
+
 const initialState = {
-    isAuthenticated: false,
-    user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
+    isAuthenticated: !!localStorage.getItem('user'),
+    user: getUserFromStorage(),
     error: null,
-    // loading: false,
     status: 'idle'
 };
 
+// Auth slice
 const authSlice = createSlice({
     name: 'auth',
     initialState,
@@ -56,32 +61,31 @@ const authSlice = createSlice({
         builder
             // Handle Sign Up
             .addCase(signUpUser.pending, (state) => {
-                state.status = 'pending'
+                state.status = 'pending';
                 state.error = null;
-                
             })
             .addCase(signUpUser.fulfilled, (state, action) => {
-               state.status = 'succeeded'
+                state.status = 'succeeded';
                 state.isAuthenticated = true;
                 state.user = action.payload;
             })
             .addCase(signUpUser.rejected, (state, action) => {
-                state.status= ' failed';
+                state.status = 'failed';
                 state.error = action.payload;
             })
 
             // Handle Login
             .addCase(loginUser.pending, (state) => {
-                 state.status = 'pending'
+                state.status = 'pending';
                 state.error = null;
             })
             .addCase(loginUser.fulfilled, (state, action) => {
-               state.status = 'succeeded'
+                state.status = 'succeeded';
                 state.isAuthenticated = true;
                 state.user = action.payload;
             })
             .addCase(loginUser.rejected, (state, action) => {
-               state.status = 'failed'
+                state.status = 'failed';
                 state.error = action.payload;
             })
 

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 
 const PostForm = () => {
   const [postContent, setPostContent] = useState('');
+  const {user} = useSelector((state) => state.auth)
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,7 +16,7 @@ const PostForm = () => {
     <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
       <div className="flex space-x-3">
         <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
-          Image
+         <img src={user.profilePic} alt="profile" />
         </div>
         <div className="flex-1">
           <form onSubmit={handleSubmit}>

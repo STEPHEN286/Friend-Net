@@ -10,12 +10,13 @@ import {
 import { useAppSelector } from '@/store/hooks';
 import CommentInput from './CommentInput';
 import CommentsList from './CommentsList';
-import { addComment, getComments } from '@/services/postServices';
+import { addComment, getComments } from '@/services/postServices'; 
+  
 
 const CommentSheet = ({ postImage, postId }) => {
   const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const currentUser = useAppSelector(state => state.user);
+  const {user} = useAppSelector(state => state.auth);
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -36,13 +37,13 @@ const CommentSheet = ({ postImage, postId }) => {
   }, [postId]);
 
   const handleSubmit = async (commentText) => {
-    if (!currentUser.id || !currentUser.userName) {
+    if (!user.id || !user.userName) {
       console.error('User information is required to comment');
       return;
     }
 
     try {
-      await addComment(postId, commentText, currentUser.id, currentUser.userName);
+      await addComment(postId, commentText, user.id, user.userName);
       const updatedComments = await getComments(postId);
       setComments(updatedComments);
     } catch (error) {
@@ -92,7 +93,7 @@ const CommentSheet = ({ postImage, postId }) => {
             )}
             <CommentInput 
               onSubmit={handleSubmit}
-              userImage={currentUser.profileImage}
+              userImage={user.profilePic}
             />
           </div>
         </div>

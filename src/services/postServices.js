@@ -9,17 +9,31 @@ import {
   arrayRemove,
   serverTimestamp,
   getDoc,
+  orderBy,
+  query,
 } from "firebase/firestore";
 
 export const getAllPosts = async () => {
-  try {
-    const postsRef = collection(db, "posts");
-    const querySnapshot = await getDocs(postsRef);
-    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    throw error;
+  const postsRef = collection(db, "posts");
+  const postsQuery = query(postsRef, orderBy("timestamp", "desc")); // Order by timestamp
+
+  const querySnapshot = await getDocs(postsQuery); // Fetch posts
+  const posts = [];
+
+  for (const docSnap of querySnapshot.docs) { // Iterate over each post
+    const postData = docSnap.data();
+    const userRef = doc(db, "users", postData.userId); // Reference to the user document
+    const userSnap = await getDoc(userRef);   
+
+    if (userSnap.exists()) { // If user exists
+      postData.profilePic = userSnap.data().profilePic || ""; // Get profilePic
+    }
+
+    posts.push({ id: docSnap.id, ...postData }); // Add post to the list
   }
+
+  console.log("Fetched posts:", posts);
+  return posts;
 };
 
 export const createPost = async ({ content, userId, userName }) => {

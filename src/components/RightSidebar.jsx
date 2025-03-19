@@ -1,7 +1,9 @@
 import React from 'react';
 import { DEFAULT_PROFILE_IMAGE, DEFAULT_GROUP_IMAGE } from '../config/images';
+import { memo } from 'react';
 
-const RightSidebar = () => {
+const RightSidebar = memo( () => {
+  console.log("Rendering RightSidebar Component...");
   return (
     <div className="col-span-3 hidden lg:block">
       <div className="bg-white rounded-lg shadow p-4 mb-4">
@@ -77,6 +79,6 @@ const RightSidebar = () => {
       </div>
     </div>
   );
-};
+});
 
 export default RightSidebar; 

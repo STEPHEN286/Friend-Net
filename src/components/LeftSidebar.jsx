@@ -6,9 +6,9 @@ import { useAppSelector } from '@/store/hooks';
 
 const LeftSidebar = () => {
   const location = useLocation();
-  const currentUser = useAppSelector(state => state.auth);
+  const {user }= useAppSelector(state => state.auth);
 
-  console.log(" current user " ,currentUser);
+  // console.log(" current user " ,currentUser);
   const navigationItems = [
     { path: ROUTES.HOME, icon: 'home', label: 'Home' },
     { path: ROUTES.EXPLORE, icon: 'compass', label: 'Explore' },
@@ -66,13 +66,13 @@ const LeftSidebar = () => {
             {/* User Profile Section */}
             <Link to={ROUTES.PROFILE.ROOT} className="flex items-center space-x-3 mb-6">
               <img
-                src={currentUser.profileImage}
+                src={user.profilePic}
                 alt="Profile"
                 className="w-12 h-12 rounded-full"
               />
               <div>
-                <h3 className="font-medium">{currentUser.userName}</h3>
-                <p className="text-sm text-gray-500">{currentUser.handle}</p>
+                <h3 className="font-medium">{user.username}</h3>
+                <p className="text-sm text-gray-500">{user.handle}</p>
               </div>
             </Link>
 

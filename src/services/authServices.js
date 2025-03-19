@@ -5,7 +5,7 @@ import {
     signOut,
   } from "firebase/auth";
   import { auth, db } from "../firebabaseConfig";
-  import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+  import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
   
   export const signUp = async (email, password, username) => {
     try {
@@ -22,21 +22,23 @@ import {
   
       await updateProfile(user, { displayName: username });
   
-      await setDoc(doc(db, "users", user.uid), {
+      const userData = {
         uid: user.uid,
         email: user.email,
         username: username,
-        profilePic: "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg?semt=ais_hybrid", // Default profile pic
+        profilePic: "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg?semt=ais_hybrid",
         createdAt: serverTimestamp(),
         followers: 0,
         following: 0,
         bio: "",
         isFirstTime: true,
         role: "user",
-      });
+    };
+
+      await setDoc(doc(db, "users", user.uid), userData);
   
       console.log("User saved to database:", user.uid);
-      return user;
+      return userData;
     } catch (error) {
       console.error("Error signing up:", error.message);
       throw error;
@@ -46,7 +48,9 @@ import {
   export const signIn = async (email, password) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential.user;
+      const user = userCredential.user;
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      return userDoc.data();
     } catch (error) {
       console.error("Error signing in:", error);
       throw error;

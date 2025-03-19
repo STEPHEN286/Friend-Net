@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DEFAULT_PROFILE_IMAGE, DEFAULT_COMMENT_IMAGE } from '../config/images';
 import CommentSheet from './post/comment/CommentSheet';
@@ -7,9 +7,10 @@ import CommentSheet from './post/comment/CommentSheet';
 import LikeButton from './post/LikeButton.jsx';
 import { getAllPosts } from '@/services/postServices';
 
-const Post = () => {
+const Post = memo(() => {
   const [posts, setPosts] = useState([]);
  
+  const fetched = useRef(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -20,46 +21,23 @@ const Post = () => {
         console.error("Error fetching posts:", error);
       }
     };
-
-    fetchPosts();
+    if (!fetched.current) {
+      fetched.current = true;
+      fetchPosts();
+    }
+    // fetchPosts();
   }, []);
 
   const handleComment = () => {
     console.log('Comment submitted');
   };
-  // const handleLike = async (postId) => {
-  //   if (!auth.currentUser) return;
-    
-  //   const userId = auth.currentUser.uid;
-  //   const newLikeStatus = await toggleLike(postId, userId);
-    
-  //   if (newLikeStatus) {
-  //     setLikes((prev) => [...prev, userId]);
-  //   } else {
-  //     setLikes((prev) => prev.filter((id) => id !== userId));
-  //   }
-  
-  //   setHasLiked(newLikeStatus);
-  // };
-  
-  // return (
-  //   <>
-  //     {console.log("Rendering posts:", posts)}
-  //     {posts.length === 0 ? (
-  //       <p className="text-center text-gray-500">No posts available.</p>
-  //     ) : (
-  //       posts.map((post) => (
-  //         <article key={post.id} className="bg-white rounded-lg shadow mb-4">
-  //           {/* Post Content */}
-  //         </article>
-  //       ))
-  //     )}
-  //   </>
-  // );
-  
+
+  console.log("Rendering Parent Component...");
+
   return (
     <>
-    {console.log(posts)}
+    {console.log("Total Posts Rendered:", posts.length, posts)}
+
   {posts.length === 0 ? (
     <p className="text-center text-gray-500">No posts available.</p>
   ) : (
@@ -67,9 +45,9 @@ const Post = () => {
       <article key={post.id} className="bg-white rounded-lg shadow mb-4">
         <div className="p-4">
           <div className="flex items-center space-x-3 mb-4">
-            <Link to={`/profile/${post.userName}`}>
+            <Link to={`/profile/${post.username}`}>
               <img
-                src={post.image || DEFAULT_PROFILE_IMAGE} // Use post.image as fallback
+                src={post.profilePic || DEFAULT_PROFILE_IMAGE} 
                 alt={post.userName}
                 className="w-10 h-10 rounded-full"
               />
@@ -78,7 +56,8 @@ const Post = () => {
               <Link to={`/profile/${post.userName}`}>
                 <h4 className="font-semibold">{post.userName}</h4>
               </Link>
-              <p className="text-sm text-gray-500">{new Date(post.timestamp).toLocaleString()}</p>
+              <p className="text-sm text-gray-500">{post.timestamp ? new Date(post.timestamp.toDate()).toLocaleString() : "Loading..."}
+            </p>
             </div>
           </div>
 
@@ -102,7 +81,7 @@ const Post = () => {
 
           <div className="flex items-center space-x-4 text-gray-500">
             <LikeButton postId={post.id} />
-            <CommentSheet postImage={post.image} comments={post.comments} onComment={handleComment} />
+            <CommentSheet  comments={post.comments} onComment={handleComment} />
             <button className="flex items-center space-x-2 cursor-pointer">
               <i className="far fa-share-square"></i>
               <span>Share</span>
@@ -153,6 +132,6 @@ const Post = () => {
 </>
 
   );
-};
+});
 
 export default Post;
