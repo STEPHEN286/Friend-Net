@@ -78,7 +78,7 @@ const Stories = () => {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow px-4 py-4 mb-4">
+      <div className="bg-white  px-4 py-4 mb-4">
         <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
           {/* Create Story Card */}
           <StoryCard isCreateCard onClick={handleCreateStory} />

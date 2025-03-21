@@ -5,14 +5,17 @@ import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
 
 const MainLayout = () => {
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen ">
       <Navbar />
-      <div className="container mx-auto px-4 pt-20">
+      <div className="container mx-auto md:px-4 pt-20">
         <div className="grid grid-cols-12 gap-4">
           <LeftSidebar />
           <div className="col-span-12 lg:col-span-6">
-            <Outlet />
+            <main className="flex-1">
+              <Outlet />
+            </main>
           </div>
           <RightSidebar />
         </div>

@@ -14,8 +14,8 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Left section with logo */}
           <div className="flex items-center">
-            <Link to={ROUTES.HOME} className="text-xl md:text-2xl font-bold text-blue-600">
-              SocialHub
+            <Link to={ROUTES.HOME} className="text-xl md:text-2xl font font-bold text-blue-600">
+             FriendNet
             </Link>
           </div>
 

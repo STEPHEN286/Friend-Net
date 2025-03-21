@@ -11,9 +11,9 @@ const LeftSidebar = () => {
   console.log(" current user " ,user);
   const navigationItems = [
     { path: ROUTES.HOME, icon: 'home', label: 'Home' },
-    { path: ROUTES.EXPLORE, icon: 'compass', label: 'Explore' },
-    { type: 'create', icon: 'plus', label: 'Create' },
+    // { path: ROUTES.EXPLORE, icon: 'compass', label: 'Explore' },
     { path: ROUTES.FRIENDS, icon: 'users', label: 'Friends' },
+    { type: 'create', icon: 'plus', label: 'Create' },
     { path: ROUTES.NOTIFICATIONS, icon: 'bell', label: 'Notifications' },
     { path: ROUTES.PROFILE.ROOT, icon: 'user', label: 'Profile' },
   ];
@@ -26,10 +26,10 @@ const LeftSidebar = () => {
           item.type === 'create' ? (
             <button
               key="create"
-              className="flex flex-col items-center justify-center -mt-6 bg-blue-600 text-white rounded-full w-14 h-14 shadow-lg"
+              className="flex flex-col items-center justify-center  border-2 border-gray-200 text-gray-600 rounded-full w-10 h-10"
             >
               <i className={`fas fa-${item.icon} text-xl`}></i>
-              <span className="text-xs mt-1">{item.label}</span>
+              {/* <span className="text-xs mt-1">{item.label}</span> */}
             </button>
           ) : (
             <Link
@@ -42,7 +42,7 @@ const LeftSidebar = () => {
               }`}
             >
               <i className={`fas fa-${item.icon} text-lg mb-1`}></i>
-              <span className="text-xs">{item.label}</span>
+              {/* <span className="text-xs">{item.label}</span> */}
             </Link>
           )
         ))}
@@ -62,7 +62,7 @@ const LeftSidebar = () => {
       {/* Desktop Sidebar */}
       <div className="hidden lg:block lg:col-span-3">
         <div className="sticky top-20">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white   border-r p-4">
             {/* User Profile Section */}
             <Link to={ROUTES.PROFILE.ROOT} className="flex items-center space-x-3 mb-6">
               <img
@@ -82,7 +82,7 @@ const LeftSidebar = () => {
                 <Link
                   key={path}
                   to={path}
-                  className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-3 px-2 py-2 rounded-lg transition-colors ${
                     location.pathname === path
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-700 hover:bg-gray-100'

@@ -1,109 +1,115 @@
 import React, { useEffect, useState } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import CommentInput from './CommentInput';
-import CommentsList from './CommentsList';
-import { addComment, getComments } from '@/services/postServices'; 
-  
+import CommentsList from './CommentsList'; 
+import { userProgressSliceActions } from '@/store/slices/userProgressSlice';
+import { fetchComments, submitComment } from '@/store/slices/commentSlice';
+import CustomModal from '@/components/ui/modal/CustomModal';
 
 const CommentSheet = ({ postImage, postId }) => {
-  const [comments, setComments] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const {user} = useAppSelector(state => state.auth);
-
-  console.log( 'comment sheet', user);
+  const [currentPostImage, setCurrentPostImage] = useState(postImage);
 
   useEffect(() => {
-    const fetchComments = async () => {
-      if (postId) {
-        setIsLoading(true);
-        try {
-          const fetchedComments = await getComments(postId);
-          setComments(fetchedComments);
-        } catch (error) {
-          console.error('Error fetching comments:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
+    console.log("Updated Post Image in CommentSheet:", postImage);
+    setCurrentPostImage(postImage);
+  }, [postImage]);
 
-    fetchComments();
-  }, [postId]);
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector(state => state.auth);
+  const isOpen = useAppSelector(state => state.userProgress.isModalOpen);
 
-  const handleSubmit = async (commentText) => {
-    if (!user.uid || !user.username) {
-      console.error('User information is required to comment');
+  const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
+
+  useEffect(() => {
+    if (postId) {
+      dispatch(fetchComments(postId));
+    }
+  }, [postId, dispatch]);
+
+  const handleSubmit = async (commentText, audioURL) => {
+    if (!postId || !user?.uid || !user?.username) {
+      console.error("Missing required fields");
       return;
     }
 
-    try {
-      await addComment(postId, commentText, user.uid, user.username);
-      const updatedComments = await getComments(postId);
-      setComments(updatedComments);
-    } catch (error) {
-      console.error('Error adding comment:', error);
+    if (!commentText.trim() && !audioURL) {
+      console.error("Cannot submit empty comment");
+      return;
     }
+
+    dispatch(
+      submitComment({
+        postId,
+        commentText,
+        userId: user.uid,
+        username: user.username,
+        audioURL,
+      })
+    );
   };
 
-  console.log(comments);
+  const handleClose = () => {
+    dispatch(userProgressSliceActions.setModalOpen());
+  };
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <button 
-          className="flex items-center space-x-2 cursor-pointer text-gray-500 hover:text-gray-700"
-          data-sheet-trigger
-        >
-          <i className="far fa-comment"></i>
-          <span>{comments.length}</span>
-        </button>
-      </SheetTrigger>
-      <SheetContent 
-        side="bottom" 
-        className="h-[90vh] p-0 sm:h-[85vh] rounded-t-xl border-t-0 sm:rounded-t-2xl"
-      >
-        <div className="flex h-full">
-          {/* Left side - Post Image (hidden on mobile) */}
-          <div className="hidden sm:block w-1/2 bg-black">
-            {postImage && (
-              <img 
-                src={postImage} 
-                alt="Post" 
-                className="w-full h-full object-contain"
-              />
-            )}
-          </div>
-
-          {/* Right side - Comments */}
-          <div className="flex-1 flex flex-col h-full">
-            <SheetHeader className="px-4 py-3 border-b">
-              <SheetTitle>Comments</SheetTitle>
-            </SheetHeader>
-
-            {isLoading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <span className="text-gray-500">Loading comments...</span>
+    <>
+      {isMobile ? (
+        <Sheet open={isOpen} onOpenChange={handleClose}>
+          <SheetContent 
+            side="bottom" 
+            className="h-[90vh] p-0 sm:h-[85vh] rounded-t-xl border-t-0 sm:rounded-t-2xl"
+          >
+            <div className="flex h-full">
+              <div className="flex-1 flex flex-col h-full">
+                <SheetHeader className="px-4 py-3 border-b">
+                  <SheetTitle>Comments</SheetTitle>
+                </SheetHeader>
+                <CommentsList postId={postId}   />
+                <CommentInput onSubmit={handleSubmit} />
               </div>
-            ) : (
-              <CommentsList comments={comments} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <CustomModal 
+          isOpen={isOpen} 
+          title="Comments" 
+          showHeader={true} 
+          className="max-w-4xl w-full h-[90vh] flex  dark:bg-gray-900 rounded-lg overflow-hidden"
+        >
+          <div className="grid grid-cols-7 h-full w-full">
+            {console.log("Current Post Image in CommentSheet:", currentPostImage)}
+            {currentPostImage && (
+              <div className="hidden md:block col-span-3 ">
+                <img 
+                  src={currentPostImage} 
+                  alt="Post" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
             )}
-            <CommentInput 
-              onSubmit={handleSubmit}
-              userImage={user.profilePic}
-            />
+            <div className="col-span-4 flex flex-col h-full">
+              <div className="flex-1 overflow-y-auto p-4">
+                <CommentsList  postId={postId}/>
+              </div>
+              <div className="border-t p-4">
+                <CommentInput onSubmit={handleSubmit} />
+              </div>
+            </div>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </CustomModal>
+      )}
+    </>
   );
 };
 
-export default CommentSheet; 
+export default CommentSheet;

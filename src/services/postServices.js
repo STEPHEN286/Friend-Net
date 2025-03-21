@@ -101,9 +101,13 @@ export const toggleLike = async (postId, userId) => {
   }
 };
 
-export const addComment = async (postId, comment, userId, userName) => {
-  if (!postId || !comment.trim() || !userId || !userName) {
-    throw new Error("Invalid input: postId, comment, userId, and userName are required.");
+export const addComment = async (postId, comment, userId, userName, audioURL = null) => {
+  if (!postId || !userId || !userName) {
+    throw new Error("Invalid input: postId, userId, and userName are required.");
+  }
+
+  if (!comment.trim() && !audioURL) {
+    throw new Error("Invalid input: Either comment text or audioURL is required.");
   }
 
   try {
@@ -111,19 +115,25 @@ export const addComment = async (postId, comment, userId, userName) => {
     const commentRef = collection(postRef, "comments");
 
     const newComment = {
-      text: comment,
-      timestamp: serverTimestamp(),
+      text: comment.trim() || null, // Store null if no text
+      audioURL: audioURL || null,  // Store null if no audio
+      // timestamp: serverTimestamp(),
       userId,
       userName,
     };
 
-    await addDoc(commentRef, newComment);
+    await addDoc(commentRef, {...newComment, timestamp: serverTimestamp()});
+    const commentDocRef = await addDoc(commentRef, newComment);
+    await updateDoc(postRef, {
+      comments: arrayUnion({ id: commentDocRef.id, ...newComment }),
+    });
     return newComment;
   } catch (error) {
     console.error("Error adding comment:", error);
     throw error;
   }
 };
+
 
 export const getComments = async (postId) => {
   try {

@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../dialog';
-import { setModalOpen } from '../../../store/features/userSlice';
+import { userProgressSliceActions } from '../../../store/slices/userProgressSlice';
 
 const CustomModal = ({ 
-  isOpen, 
-  title, 
-  description, 
+  isOpen,
+  title = '', 
+  description = '', 
   children, 
   className = '',
   showHeader = true 
@@ -20,12 +20,12 @@ const CustomModal = ({
   const dispatch = useDispatch();
 
   const handleClose = () => {
-    dispatch(setModalOpen(false));
+    dispatch(userProgressSliceActions.setModalOpen());
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose} >
-      <DialogContent className={`sm:max-w-[425px] ${className}`}>
+      <DialogContent className={` ${className}`}>
         {showHeader && (
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>

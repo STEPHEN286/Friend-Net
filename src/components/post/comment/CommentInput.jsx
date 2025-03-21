@@ -1,9 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { DEFAULT_PROFILE_IMAGE } from '../../../config/images';
+import { uploadAudioToCloudinary } from '@/services/uploadVoiceComment';
+import { useSelector } from 'react-redux';
 
 const CommentInput = ({ onSubmit }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
+    const { user } = useSelector(state => state.auth);
   const [recordingTime, setRecordingTime] = useState(0);
   const [commentText, setCommentText] = useState('');
   const mediaRecorderRef = useRef(null);
@@ -21,16 +24,27 @@ const CommentInput = ({ onSubmit }) => {
         chunksRef.current.push(e.data);
       };
 
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/mp3' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        setAudioURL(audioUrl);
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, { type: "audio/mp3" });
+        setAudioURL(URL.createObjectURL(audioBlob)); // Temporary local preview
+
+        try {
+          // Upload to Cloudinary
+          const uploadedUrl = await uploadAudioToCloudinary(audioBlob);
+          if (uploadedUrl) {
+            setAudioURL(uploadedUrl); // Replace local preview with Cloudinary URL
+            console.log('uploadedUrl', uploadedUrl);
+          }
+        } catch (uploadError) {
+          console.error('Error uploading audio:', uploadError);
+        }
+
         stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorder.start();
       setIsRecording(true);
-      
+
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
@@ -64,7 +78,7 @@ const CommentInput = ({ onSubmit }) => {
   };
 
   const handleSubmit = () => {
-    onSubmit(commentText);
+    onSubmit(commentText, audioURL);
     setCommentText('');
     setAudioURL(null);
     setIsRecording(false);
@@ -81,6 +95,7 @@ const CommentInput = ({ onSubmit }) => {
                 const audio = new Audio(audioURL);
                 audio.play();
               }}
+              aria-label="Play audio"
             >
               <i className="fas fa-play text-white text-xs"></i>
             </button>
@@ -89,6 +104,7 @@ const CommentInput = ({ onSubmit }) => {
             <button 
               onClick={() => setAudioURL(null)}
               className="text-red-500 hover:text-red-600"
+              aria-label="Remove audio"
             >
               <i className="fas fa-times"></i>
             </button>
@@ -103,12 +119,14 @@ const CommentInput = ({ onSubmit }) => {
             <button 
               onClick={stopRecording}
               className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center"
+              aria-label="Stop recording"
             >
               <i className="fas fa-check text-gray-700"></i>
             </button>
             <button 
               onClick={cancelRecording}
               className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center"
+              aria-label="Cancel recording"
             >
               <i className="fas fa-times text-gray-700"></i>
             </button>
@@ -117,7 +135,7 @@ const CommentInput = ({ onSubmit }) => {
       ) : null}
       <div className="flex items-center space-x-3">
         <img 
-          src={DEFAULT_PROFILE_IMAGE} 
+          src={user.profilePic} 
           alt="Current User" 
           className="w-8 h-8 rounded-full"
         />
@@ -134,6 +152,7 @@ const CommentInput = ({ onSubmit }) => {
             <button 
               onClick={startRecording}
               className="text-gray-500 hover:text-gray-700"
+              aria-label="Start recording"
             >
               <i className="fas fa-microphone"></i>
             </button>
@@ -151,4 +170,4 @@ const CommentInput = ({ onSubmit }) => {
   );
 };
 
-export default CommentInput; 
+export default CommentInput;

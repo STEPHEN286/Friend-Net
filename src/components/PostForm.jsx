@@ -14,6 +14,7 @@ const PostForm = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+      {/* <h1>Post</h1> */}
       <div className="flex space-x-3">
         <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
          <img src={user.profilePic} alt="profile" />

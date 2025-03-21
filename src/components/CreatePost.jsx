@@ -5,8 +5,10 @@ import { auth } from '@/firebabaseConfig';
 import { getUserById } from '@/services/userServices';
 import { createPost } from '@/services/postServices';
 import { toast, Toaster } from 'sonner';
+import { useAppSelector } from '@/store/hooks';
 
 const CreatePost = () => {
+  const {user} = useAppSelector(state => state.auth);
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [userProfileImage, setUserProfileImage] = useState()
@@ -100,7 +102,7 @@ const CreatePost = () => {
   return (
     <>
       <Toaster position="top-right" richColors />
-      <div className="bg-white  rounded-lg shadow mb-4">
+      <div className="bg-white border-b mb-4">
         <div className="p-4">
           <div className="flex space-x-3">
             <img
@@ -188,12 +190,12 @@ const CreatePost = () => {
                 <div className="bg-white rounded-lg">
                   <div className="flex items-center space-x-3 mb-4">
                     <img
-                      src={DEFAULT_PROFILE_IMAGE}
+                      src={user.profilePic}
                       alt="Profile"
                       className="w-10 h-10 rounded-full"
                     />
                     <div>
-                      <h4 className="font-semibold">Current User</h4>
+                      <h4 className="font-semibold">{user.username}</h4>
                       <p className="text-sm text-gray-500">Just now</p>
                     </div>
                   </div>
@@ -208,13 +210,16 @@ const CreatePost = () => {
                       )
                     )}
                   </p>
-                  <div className="mb-4">
-                    <img
-                      src={selectedImage || DEFAULT_POST_IMAGE}
-                      alt="Post preview"
-                      className="w-full rounded-lg"
-                    />
-                  </div>
+
+                {selectedImage && (
+  <div className="mb-4">
+    <img
+      src={selectedImage}
+      alt="Post preview"
+      className="w-full rounded-lg"
+    />
+  </div>
+)}
                 </div>
                 <div className="mt-4 space-y-4">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
