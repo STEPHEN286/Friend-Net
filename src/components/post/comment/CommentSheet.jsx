@@ -11,14 +11,16 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import CommentInput from './CommentInput';
 import CommentsList from './CommentsList'; 
 import { userProgressSliceActions } from '@/store/slices/userProgressSlice';
-import { fetchComments, submitComment } from '@/store/slices/commentSlice';
+import {  submitComment } from '@/store/slices/commentSlice';
 import CustomModal from '@/components/ui/modal/CustomModal';
+// import { useSelector } from 'react-redux';
+
 
 const CommentSheet = ({ postImage, postId }) => {
   const [currentPostImage, setCurrentPostImage] = useState(postImage);
-
+ 
   useEffect(() => {
-    console.log("Updated Post Image in CommentSheet:", postImage);
+    
     setCurrentPostImage(postImage);
   }, [postImage]);
 
@@ -28,11 +30,12 @@ const CommentSheet = ({ postImage, postId }) => {
 
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
 
-  useEffect(() => {
-    if (postId) {
-      dispatch(fetchComments(postId));
-    }
-  }, [postId, dispatch]);
+
+
+  
+
+
+ 
 
   const handleSubmit = async (commentText, audioURL) => {
     if (!postId || !user?.uid || !user?.username) {
@@ -63,6 +66,7 @@ const CommentSheet = ({ postImage, postId }) => {
   return (
     <>
       {isMobile ? (
+        console.log("rendering mobile comment sheet"),
         <Sheet open={isOpen} onOpenChange={handleClose}>
           <SheetContent 
             side="bottom" 
@@ -80,6 +84,7 @@ const CommentSheet = ({ postImage, postId }) => {
           </SheetContent>
         </Sheet>
       ) : (
+        console.log("rendering desktop comment sheet"),
         <CustomModal 
           isOpen={isOpen} 
           title="Comments" 
@@ -87,7 +92,7 @@ const CommentSheet = ({ postImage, postId }) => {
           className="max-w-4xl w-full h-[90vh] flex  dark:bg-gray-900 rounded-lg overflow-hidden"
         >
           <div className="grid grid-cols-7 h-full w-full">
-            {console.log("Current Post Image in CommentSheet:", currentPostImage)}
+            {/* {console.log("Current Post Image in CommentSheet:", currentPostImage)} */}
             {currentPostImage && (
               <div className="hidden md:block col-span-3 ">
                 <img 

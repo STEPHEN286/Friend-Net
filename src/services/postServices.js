@@ -11,8 +11,12 @@ import {
   getDoc,
   orderBy,
   query,
+  increment,
+  deleteDoc,
 } from "firebase/firestore";
 import { uploadToCloudinary } from './uploadService';
+import { DEFAULT_PROFILE_IMAGE } from "@/config/images";
+import { getUserById } from "./userServices";
 
 export const getAllPosts = async () => {
   const postsRef = collection(db, "posts");
@@ -111,25 +115,51 @@ export const addComment = async (postId, comment, userId, userName, audioURL = n
   }
 
   try {
-    const postRef = doc(db, "posts", postId);
-    const commentRef = collection(postRef, "comments");
+    // Fetch user details including profile picture
+    const user = await getUserById(userId);
+    const userProfilePic = user.profilePic || DEFAULT_PROFILE_IMAGE;
 
+    // Reference to the comments subcollection inside the post document
+    const commentRef = collection(db, "posts", postId, "comments");
+
+    // Comment object
     const newComment = {
-      text: comment.trim() || null, // Store null if no text
-      audioURL: audioURL || null,  // Store null if no audio
-      // timestamp: serverTimestamp(),
+      text: comment.trim() || null, 
+      audioURL: audioURL || null,
       userId,
       userName,
+      userProfilePic,
+      timestamp: serverTimestamp()
     };
 
-    await addDoc(commentRef, {...newComment, timestamp: serverTimestamp()});
+    // Add comment to Firestore
     const commentDocRef = await addDoc(commentRef, newComment);
+
+    // Increment the comment count in the post document
+    const postRef = doc(db, "posts", postId);
     await updateDoc(postRef, {
-      comments: arrayUnion({ id: commentDocRef.id, ...newComment }),
+      commentCount: increment(1)
     });
-    return newComment;
+
+    return { id: commentDocRef.id, ...newComment };
   } catch (error) {
     console.error("Error adding comment:", error);
+    throw error;
+  }
+};
+
+export const deleteComment = async (postId, commentId) => {
+  try {
+    const commentRef = doc(db, "posts", postId, "comments", commentId);
+    await deleteDoc(commentRef);
+
+    // 🔥 Decrement commentsCount
+    const postRef = doc(db, "posts", postId);
+    await updateDoc(postRef, {
+      commentsCount: increment(-1),
+    });
+  } catch (error) {
+    console.error("Error deleting comment:", error);
     throw error;
   }
 };
@@ -137,10 +167,15 @@ export const addComment = async (postId, comment, userId, userName, audioURL = n
 
 export const getComments = async (postId) => {
   try {
-    const postRef = doc(db, "posts", postId);
-    const commentRef = collection(postRef, "comments");
-    const querySnapshot = await getDocs(commentRef);
-    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const commentRef = collection(db, "posts", postId, "comments");
+    const q = query(commentRef, orderBy("timestamp", "desc")); 
+    const querySnapshot = await getDocs(q);
+
+    const data = querySnapshot.docs.map((doc) => {
+      return { id: doc.id, ...doc.data() };
+    });
+
+    return data;
   } catch (error) {
     console.error("Error fetching comments:", error);
     throw error;
