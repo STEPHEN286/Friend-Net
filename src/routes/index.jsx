@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, useRouteError } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import AuthLayout from '../layouts/AuthLayout';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 // Pages
 import Login from '../pages/Auth/Login';
@@ -12,6 +13,7 @@ import Notifications from '../pages/Notifications';
 import Settings from '../pages/Settings';
 import MainFeed from '../pages/MainFeed';
 import Friends from '../pages/Friends';
+import FriendsPage from '../pages/FriendsPage';
 
 // Route paths object for consistent linking
 export const ROUTES = {
@@ -65,6 +67,7 @@ const ErrorBoundary = () => {
 
 // Create and export the router configuration
 const router = createBrowserRouter([
+  // Auth routes are public
   {
     path: ROUTES.AUTH.ROOT,
     element: <AuthLayout />,
@@ -84,8 +87,13 @@ const router = createBrowserRouter([
       },
     ],
   },
+  // All main app routes are protected
   {
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorBoundary />,
     children: [
       {
@@ -98,7 +106,7 @@ const router = createBrowserRouter([
       },
       {
         path: ROUTES.FRIENDS,
-        element: <Friends />,
+        element: <FriendsPage />,
       },
       {
         path: ROUTES.MESSAGES,
@@ -128,7 +136,7 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to={ROUTES.HOME} replace />,
+    element: <Navigate to={ROUTES.AUTH.LOGIN} replace />,
   },
 ]);
 

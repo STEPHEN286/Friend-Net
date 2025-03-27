@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ROUTES } from '../../routes';
 // import { signIn } from '@/services/authServices';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { loginUser } from '@/store/slices/authSlice';
 import { useSelector } from 'react-redux';
 
 const Login = () => {
-  const dispatch =useDispatch ()
+  const dispatch = useAppDispatch();
   const { status , error } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const location = useLocation();
   
   
   const {
@@ -26,29 +27,15 @@ const Login = () => {
   });
 
   const onSubmit = async (data) => {
-   
- 
-    dispatch(loginUser({ email: data.email, password: data.password }))
-    .unwrap()
-    .then(() => navigate(ROUTES.HOME))
-    .catch(() => {});
-    // try {
-    //   const resultAction = await dispatch(loginUser({ email: data.email, password: data.password })).unwrap();
-    //   console.log(resultAction);
-    //   // if (loginUser.fulfilled.match(resultAction)) {
-    //   //   console.log("Logged")
-    //   //   console.log('Login successful:', resultAction.payload);
-    //   //   navigate(ROUTES.HOME);
-    //   // } else if (loginUser.rejected.match(resultAction)) {
-    //   //   console.error('Login failed:', resultAction.payload);
-    //   //   setSubmitError(resultAction.payload || 'Failed to login. Please try again.');
-    //   // }
-    // } catch (error) { 
-    //   // setSubmitError('Failed to login. Please try again.');
-    //   throw error;
-    // } finally {
-    //   // setIsLoading(false);
-    // }
+    try {
+      await dispatch(loginUser(data)).unwrap();
+      // Redirect to the attempted URL or home page
+      const from = location.state?.from?.pathname || ROUTES.HOME;
+      navigate(from, { replace: true });
+    } catch (error) {
+      // Handle login error
+      console.error('Login failed:', error);
+    }
   };
   
 

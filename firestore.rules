@@ -1,40 +1,66 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the user is accessing their own data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
     // User rules
     match /users/{userId} {
-      allow read: if true;  // Allow public reading of user profiles
-      allow write: if request.auth != null && request.auth.uid == userId;  // Users can only edit their own profile
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
     }
-    
+
     // Post rules
     match /posts/{postId} {
-      allow read: if true;  // Anyone can read posts
-      allow create: if request.auth != null;  // Authenticated users can create posts
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;  // Only post owner can modify/delete
-      
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
+
       // Comments subcollection
       match /comments/{commentId} {
-        allow read: if true;  // Anyone can read comments
-        allow create: if request.auth != null;  // Authenticated users can comment
-        allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;  // Comment owner can modify/delete
+        allow read: if true;
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
       }
     }
 
     // Chat rules
     match /chats/{chatId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isAuthenticated();
     }
 
-    // Friend request rules
+    // Friend requests collection rules
     match /friend_requests/{requestId} {
-      allow read, write: if request.auth != null;
+      allow read: if isAuthenticated() &&
+        (request.auth.uid == resource.data.senderId || 
+         request.auth.uid == resource.data.receiverId);
+         
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.senderId;
+        
+      // Only the receiver can update the request to "accepted"
+     allow update: if isAuthenticated() &&
+  request.auth.uid == resource.data.receiverId &&
+  resource.data.status == "pending" &&
+  request.resource.data.status == "accepted" &&
+  request.resource.keys().hasOnly(["status"]);
+
+      // Sender or receiver can delete the request (e.g., cancel or decline)
+      allow delete: if isAuthenticated() &&
+        (request.auth.uid == resource.data.senderId || 
+         request.auth.uid == resource.data.receiverId);
     }
 
     // Notification rules
     match /notifications/{notificationId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isAuthenticated();
     }
   }
-} 
-} 
+}
