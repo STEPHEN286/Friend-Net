@@ -1,11 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { getFollowers, getFollowing } from '@/services/friendServices';
+import FollowersFollowingModal from '@/components/FollowersFollowingModal';
 
 const ProfileManagement = () => {
   const [activeTab, setActiveTab] = useState('posts');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isFollowersModalOpen, setIsFollowersModalOpen] = useState(false);
+  const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const { user } = useSelector((state) => state.auth);
   console.log("user", user);
+
+  useEffect(() => {
+    if (user?.uid) {
+      const fetchData = async () => {
+        const [followersData, followingData] = await Promise.all([
+          getFollowers(user.uid),
+          getFollowing(user.uid)
+        ]);
+        setFollowers(followersData);
+        setFollowing(followingData);
+      };
+      fetchData();
+    }
+  }, [user?.uid]);
 
   const posts = [
     {
@@ -117,15 +137,21 @@ const ProfileManagement = () => {
 
         <div className="flex space-x-8 mb-8">
           <div className="text-center">
-            <div className="text-xl font-bold text-main">{user?.stats?.posts || 0}</div>
+            <div className="text-xl font-bold text-main">{user?.posts || 0}</div>
             <div className="text-main/70">Posts</div>
           </div>
-          <div className="text-center">
-            <div className="text-xl font-bold text-main">{user?.stats?.followers || 0}</div>
+          <div 
+            className="text-center cursor-pointer hover:text-primary transition-colors"
+            onClick={() => setIsFollowersModalOpen(true)}
+          >
+            <div className="text-xl font-bold text-main">{user?.followers || 0}</div>
             <div className="text-main/70">Followers</div>
           </div>
-          <div className="text-center">
-            <div className="text-xl font-bold text-main">{user?.stats?.following || 0}</div>
+          <div 
+            className="text-center cursor-pointer hover:text-primary transition-colors"
+            onClick={() => setIsFollowingModalOpen(true)}
+          >
+            <div className="text-xl font-bold text-main">{user?.following || 0}</div>
             <div className="text-main/70">Following</div>
           </div>
         </div>
@@ -283,6 +309,20 @@ const ProfileManagement = () => {
           </div>
         </div>
       )}
+
+      <FollowersFollowingModal
+        isOpen={isFollowersModalOpen}
+        onClose={() => setIsFollowersModalOpen(false)}
+        type="followers"
+        users={followers}
+      />
+
+      <FollowersFollowingModal
+        isOpen={isFollowingModalOpen}
+        onClose={() => setIsFollowingModalOpen(false)}
+        type="following"
+        users={following}
+      />
     </div>
   );
 };

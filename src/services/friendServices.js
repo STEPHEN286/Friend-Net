@@ -9,12 +9,12 @@ import {
   getDoc,
   updateDoc,
   doc,
-  writeBatch,
-  increment
+  increment,
+  setDoc
 } from "firebase/firestore";
 
 
-const batch = writeBatch(db)
+// const batch = writeBatch(db)
 const convertTimestamp = (timestamp) => {
   if (!timestamp) return null;
   return timestamp.toMillis();
@@ -99,59 +99,109 @@ export const getFriendRequests = async (userId) => {
 };
 
 export const acceptFriendRequest = async (requestId) => {
-  // Implement the logic to accept a friend request
-  console.log(requestId)
-    try {
-      const requestRef = doc(db, "friend_requests", requestId);
-      const requestSnap = await getDoc(requestRef)
+  try {
+    const requestRef = doc(db, "friend_requests", requestId);
+    const requestSnap = await getDoc(requestRef);
 
-    if (!requestSnap.exists()){
-      throw new Error ("friend request not found ");
+    if (!requestSnap.exists()) {
+      throw new Error("Friend request not found");
     }
 
-    const {senderId, receiverId} = requestSnap.data();
-
-
-    batch.update(requestRef, {status: "accepted"})
-
-    const friendsCollectionName = "friends"
-    const senderRef = doc(db, friendsCollectionName, `${senderId}_${receiverId}`);
-    const receiverRef = doc(db, friendsCollectionName, `${receiverId}_${senderId}`);
-
+    const { senderId, receiverId, status } = requestSnap.data();
     
-    batch.set(senderRef, {
-      userId: senderId,
-      friendId: receiverId,
-      createdAt: serverTimestamp(),
+    // Ensure the request is pending before accepting
+    if (status !== "pending") {
+      throw new Error("Friend request is not pending");
+    }
+
+    // Step 1: Update request status (only the receiver can do this)
+    await updateDoc(requestRef, { 
+      status: "accepted",
+      // updatedAt: serverTimestamp()
     });
 
-    batch.set(receiverRef, {
-      userId: receiverId,
-      friendId: senderId,
-      createdAt: serverTimestamp(),
-    });
-    const senderRefUser = doc(db, "users", senderId);
-    const receiverRefUser = doc(db, "users", receiverId);
+    // Step 2: Add both friends (using setDoc to ensure atomic operations)
+    const friendsCollectionName = "friends";
+    await Promise.all([
+      setDoc(doc(db, friendsCollectionName, `${senderId}_${receiverId}`), {
+        userId: senderId,
+        friendId: receiverId,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }),
+      setDoc(doc(db, friendsCollectionName, `${receiverId}_${senderId}`), {
+        userId: receiverId,
+        friendId: senderId,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      })
+    ]);
 
-    batch.update(senderRefUser, { following: increment(1), followers: increment(1) }); 
-    batch.update(receiverRefUser, { followers: increment(1), following: increment(1) })
-    await batch.commit();
+    // Step 3: Update followers and following counts
+    await Promise.all([
+      updateDoc(doc(db, "users", senderId), { 
+        following: increment(1), 
+        followers: increment(1),
+        updatedAt: serverTimestamp()
+      }),
+      updateDoc(doc(db, "users", receiverId), { 
+        followers: increment(1), 
+        following: increment(1),
+        updatedAt: serverTimestamp()
+      })
+    ]);
+
     console.log("Friend request accepted successfully");
   } catch (error) {
     console.error("Error accepting friend request:", error);
     throw error;
   }
-      
-   
-
 };
-
-
-
-
 
 export const declineFriendRequest = async (requestId) => {
   // Implement the logic to decline a friend request
 
+};
+
+export const getFollowers = async (userId) => {
+  try {
+    const friendsRef = collection(db, "friends");
+    const q = query(friendsRef, where("friendId", "==", userId));
+    const snapshot = await getDocs(q);
+    
+    const followerIds = snapshot.docs.map(doc => doc.data().userId);
+    const followers = await Promise.all(
+      followerIds.map(async (id) => {
+        const userDoc = await getDoc(doc(db, "users", id));
+        return { id, ...userDoc.data() };
+      })
+    );
+    
+    return followers;
+  } catch (error) {
+    console.error("Error getting followers:", error);
+    return [];
+  }
+};
+
+export const getFollowing = async (userId) => {
+  try {
+    const friendsRef = collection(db, "friends");
+    const q = query(friendsRef, where("userId", "==", userId));
+    const snapshot = await getDocs(q);
+    
+    const followingIds = snapshot.docs.map(doc => doc.data().friendId);
+    const following = await Promise.all(
+      followingIds.map(async (id) => {
+        const userDoc = await getDoc(doc(db, "users", id));
+        return { id, ...userDoc.data() };
+      })
+    );
+    
+    return following;
+  } catch (error) {
+    console.error("Error getting following:", error);
+    return [];
+  }
 };
 
